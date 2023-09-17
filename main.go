@@ -10,14 +10,77 @@ import (
 	"strings"
 )
 
+var input string
+
 func roundFloat(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio
 }
 
+func calculate(input string) (string, error) {
+	// fmt.Printf("Trimmed: '%s'\n", input)
+
+	pattern := `([,.0-9]+|[\+\-\*\/\^])`
+	regex := regexp.MustCompile(pattern)
+	matches := regex.FindAllString(input, -1)
+
+	if len(matches) != 3 {
+		return "", fmt.Errorf("wrong format")
+	}
+	// fmt.Println(matches)
+	// fmt.Println(len(matches))
+	firstNumber, err := strconv.ParseFloat(matches[0], 64)
+	if err != nil {
+		return "", err
+	}
+	secondNumber, err := strconv.ParseFloat(matches[2], 64)
+	if err != nil {
+		return "", err
+	}
+
+	// fmt.Println(firstNumber, secondNumber)
+
+	var result float64
+	switch matches[1] {
+	case "+":
+		result = firstNumber + secondNumber
+	case "-":
+		result = firstNumber - secondNumber
+	case "*":
+		result = firstNumber * secondNumber
+	case "/":
+		if secondNumber == 0 {
+			return "", fmt.Errorf("division by 0 is undefined")
+		}
+		result = firstNumber / secondNumber
+	case "^":
+		result = math.Pow(firstNumber, secondNumber)
+	}
+
+	result = roundFloat(result, 9)
+
+	var res string
+	if result == float64(int(result)) {
+		res = fmt.Sprintf("%.0f", result)
+	} else {
+		res = strconv.FormatFloat(result, 'f', -1, 64)
+	}
+	return res, nil
+}
+
+func validateInput(input string) (string, error) {
+	input = strings.ReplaceAll(input, " ", "")
+
+	if len(input) == 0 {
+		return "", fmt.Errorf("input is empty")
+	}
+
+	return input, nil
+}
+
 func main() {
 	for {
-		var input string
+		input = ""
 		scanner := bufio.NewScanner(os.Stdin)
 
 		// Prompt the user for input
@@ -32,60 +95,17 @@ func main() {
 			return
 		}
 
-		input = strings.ReplaceAll(input, " ", "")
-		// fmt.Printf("Trimmed: '%s'\n", input)
-
-		pattern := `([,.0-9]+|[\+\-\*\/\^])`
-		regex := regexp.MustCompile(pattern)
-		matches := regex.FindAllString(input, -1)
-
-		if len(matches) != 3 {
-			fmt.Println("Wrong format")
-			continue
-		}
-		// fmt.Println(matches)
-		// fmt.Println(len(matches))
-		firstNumber, err := strconv.ParseFloat(matches[0], 64)
+		input, err := validateInput(input)
 		if err != nil {
-			fmt.Println("Error: ", err.Error())
+			fmt.Println("Input error:", err.Error())
 			continue
 		}
-		secondNumber, err := strconv.ParseFloat(matches[2], 64)
+
+		result, err := calculate(input)
 		if err != nil {
-			fmt.Println("Error: ", err.Error())
+			fmt.Println("Error:", err.Error())
 			continue
 		}
-
-		// fmt.Println(firstNumber, secondNumber)
-
-		var result float64
-		switch matches[1] {
-		case "+":
-			result = firstNumber + secondNumber
-		case "-":
-			result = firstNumber - secondNumber
-		case "*":
-			result = firstNumber * secondNumber
-		case "/":
-			if secondNumber == 0 {
-				fmt.Println("Cannot divide 0")
-				continue
-			}
-			result = firstNumber / secondNumber
-		case "^":
-			result = math.Pow(firstNumber, secondNumber)
-		}
-
-		result = roundFloat(result, 9)
-
-		if result == float64(int(result)) {
-			fmt.Printf("Result: %.0f\n", result)
-		} else {
-			fmt.Printf("Result: %s\n", strconv.FormatFloat(result, 'f', -1, 64))
-		}
-
-		// for index, value := range matches {
-		// 	fmt.Println(index, value)
-		// }
+		fmt.Printf("Result: %s\n", result)
 	}
 }
