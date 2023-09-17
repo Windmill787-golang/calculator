@@ -11,3 +11,5 @@ go run main.go
 ```
 2+3
 ```
+
+Available caluclations: +, -, \*, /, ^
