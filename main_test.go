@@ -1,19 +1,55 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestEmpty(t *testing.T) {
-	result, err := validateInput("")
+func TestParseInput(t *testing.T) {
+	firstNumber, secondNumber, operation, err := parseInput("")
 	if err == nil {
 		t.Errorf("Validate input must return error if input is empty")
 	}
-	if result != "" {
-		t.Errorf("Result must be empty string if input is empty")
+	if firstNumber != 0 {
+		t.Errorf("First number must be 0 if input is empty")
+	}
+	if secondNumber != 0 {
+		t.Errorf("Second number must be 0 if input is empty")
+	}
+	if operation != "" {
+		t.Errorf("Operation must be empty string if input is empty")
+	}
+
+	firstNumber, secondNumber, operation, err = parseInput("text + text")
+	if err == nil {
+		t.Errorf("Validate input must return error if input has wrong format")
+	}
+	if firstNumber != 0 {
+		t.Errorf("First number must be 0 if input has wrong format")
+	}
+	if secondNumber != 0 {
+		t.Errorf("Second number must be 0 if input has wrong format")
+	}
+	if operation != "" {
+		t.Errorf("Operation must be empty string if input has wrong format")
+	}
+
+	firstNumber, secondNumber, operation, err = parseInput("2 + 2")
+	if err != nil {
+		t.Errorf("Validate input must return nil error if input is 2 + 2")
+	}
+	if firstNumber != 2 {
+		t.Errorf("First number must be 0 if input is 2 + 2")
+	}
+	if secondNumber != 2 {
+		t.Errorf("Second number must be 0 if input is 2 + 2")
+	}
+	if operation != "+" {
+		t.Errorf("Operation must be empty string if input is 2 + 2")
 	}
 }
 
 func TestAddition(t *testing.T) {
-	result, err := calculate("4+2")
+	result, err := calculate(4, 2, "+")
 	if err != nil {
 		t.Errorf("4+2 must not return error")
 	}
@@ -23,7 +59,7 @@ func TestAddition(t *testing.T) {
 }
 
 func TestSubstraction(t *testing.T) {
-	result, err := calculate("5-3")
+	result, err := calculate(5, 3, "-")
 	if err != nil {
 		t.Errorf("5-3 must not return error")
 	}
@@ -33,7 +69,7 @@ func TestSubstraction(t *testing.T) {
 }
 
 func TestMultiplication(t *testing.T) {
-	result, err := calculate("9*8")
+	result, err := calculate(9, 8, "*")
 	if err != nil {
 		t.Errorf("9*8 must not return error")
 	}
@@ -43,7 +79,7 @@ func TestMultiplication(t *testing.T) {
 }
 
 func TestDivisiton(t *testing.T) {
-	result, err := calculate("9/2")
+	result, err := calculate(9, 2, "/")
 	if err != nil {
 		t.Errorf("9/2 must not return error")
 	}
@@ -51,7 +87,7 @@ func TestDivisiton(t *testing.T) {
 		t.Errorf("The result of 9/2 must be 4.5")
 	}
 
-	result, err = calculate("8/0")
+	result, err = calculate(8, 0, "/")
 	if err == nil {
 		t.Errorf("Division by zero must return error")
 	}
@@ -61,7 +97,7 @@ func TestDivisiton(t *testing.T) {
 }
 
 func TestPower(t *testing.T) {
-	result, err := calculate("2^6")
+	result, err := calculate(2, 6, "^")
 	if err != nil {
 		t.Errorf("2^6 must not return error")
 	}
